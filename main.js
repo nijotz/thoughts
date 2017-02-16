@@ -1,6 +1,6 @@
 // http://park.org/Canada/Museum/insects/evolution/navigation.html
 import Butterfly from './butterfly.js'
-import { initGui } from './settings.js'
+import { initGui, settings } from './settings.js'
 import Woman from './woman.js'
 
 class App {
@@ -24,6 +24,7 @@ class App {
     this.camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 100000);
     this.camera.position.set(0, 50, 300);
     this.camera.lookAt(this.scene.position);
+    this.cameraAngle = 0;
 
     this.light = new THREE.PointLight(0xdfebff, 1);
     this.light.position.set(-5, 2, 20);
@@ -46,8 +47,19 @@ class App {
     this.render();
   }
 
+  updateCamera() {
+    if (settings.rotateCamera) {
+      this.cameraAngle += 0.01;
+      this.camera.position.x = 304 * Math.cos(this.cameraAngle);
+      this.camera.position.z = 304 * Math.sin(this.cameraAngle);
+      this.camera.lookAt(this.scene.position);
+    }
+  }
+
   update() {
     for (var i in this.butterflies) { this.butterflies[i].update(); }
+    this.woman.update();
+    this.updateCamera();
   }
 
   resize() {

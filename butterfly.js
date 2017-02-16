@@ -61,6 +61,13 @@ export default class Butterfly {
     this.object.quaternion.copy(quaternion.clone());
   }
 
+  updateTargetHeading() {
+    if (!settings.updateTarget) { return; }
+    var rand = function() { return (-Math.random() + 0.5) / 1.0 };
+    this.targetHeading.add(new THREE.Vector3(rand(), rand(), rand()));
+    this.targetHeading.normalize();
+  }
+
   update() {
     // move
     this.velocity.normalize();
@@ -80,11 +87,6 @@ export default class Butterfly {
     // rotate
     this.rotate(rotQuat);
 
-    // Adjust target
-    var rand = function() { return (-Math.random() + 0.5) / 1.0 };
-    this.targetHeading.add(new THREE.Vector3(rand(), rand(), rand()));
-    this.targetHeading.normalize();
-
     // Rotate slightly towards center
     var center = this.object.position.clone();
     center.multiplyScalar(-1);
@@ -101,6 +103,7 @@ export default class Butterfly {
   }
 
   flap() {
+    if (!settings.flap) { return; }
     var oldAngle = this.flapAngle;
 
     this.phase = (this.phase + 0.3) % (Math.PI * 2);
