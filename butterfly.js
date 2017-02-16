@@ -1,4 +1,5 @@
 import { settings } from './settings.js'
+import Line from './line.js'
 
 export default class Butterfly {
   constructor(app) {
@@ -10,42 +11,15 @@ export default class Butterfly {
     this.object.position.set(0, 0, 0);
     this.phase = Math.random();
     this.flapAngle = Math.sin(Math.PI) * (Math.PI / 2);
+
+    this.velocityLine = new Line(this.app, this, 'velocity', 'displayVelocity', 0x00ff00);
+    this.targetLine = new Line(this.app, this, 'targetHeading', 'displayTarget', 0xff0000);
   }
 
   remove() {
     this.app.scene.remove(this.object);
-  }
-
-  displayVelocity() {
-    this.object.remove(this.velocityLine);
-    if (!settings.displayVelocity) { return; };
-
-    var material = new THREE.LineBasicMaterial({color: 0x00ff00});
-    var geometry = new THREE.Geometry();
-
-    geometry.vertices.push(new THREE.Vector3(0, 0, 0));
-    this.velocity.setLength(10);
-    geometry.vertices.push(this.velocity.clone());
-    this.velocity.normalize();
-
-    this.velocityLine = new THREE.Line(geometry, material);
-    this.object.add(this.velocityLine);
-  }
-
-  displayTarget() {
-    this.object.remove(this.target_line);
-    if (!settings.displayTarget) { return; };
-
-    var material = new THREE.LineBasicMaterial({color: 0xff0000});
-    var geometry = new THREE.Geometry();
-
-    geometry.vertices.push(new THREE.Vector3(0, 0, 0));
-    this.targetHeading.setLength(10);
-    geometry.vertices.push(this.targetHeading.clone());
-    this.targetHeading.normalize();
-
-    this.target_line = new THREE.Line(geometry, material);
-    this.object.add(this.target_line);
+    this.velocityLine.remove();
+    this.targetLine.remove();
   }
 
   rotate(rotQuat) {
@@ -63,12 +37,30 @@ export default class Butterfly {
 
   updateTargetHeading() {
     if (!settings.updateTarget) { return; }
+
+    // Random change
     var rand = function() { return (-Math.random() + 0.5) / 1.0 };
     this.targetHeading.add(new THREE.Vector3(rand(), rand(), rand()));
     this.targetHeading.normalize();
+
+    // Rotate slightly towards center
+    var center = this.object.position.clone();
+    center.multiplyScalar(-1);
+    center.normalize();
+    var unit = new THREE.Quaternion();
+    unit.setFromUnitVectors(center, center);
+    var centerRot = new THREE.Quaternion();
+    centerRot.setFromUnitVectors(this.targetHeading, center);
+    unit.slerp(centerRot, 0.025);
+    this.targetHeading.applyQuaternion(unit);
   }
 
   update() {
+    this.velocityLine.update();
+    this.targetLine.update();
+
+    this.updateTargetHeading();
+
     // move
     this.velocity.normalize();
     this.velocity.multiplyScalar(0.5);  // Set the "speed"
@@ -86,20 +78,6 @@ export default class Butterfly {
 
     // rotate
     this.rotate(rotQuat);
-
-    // Rotate slightly towards center
-    var center = this.object.position.clone();
-    center.multiplyScalar(-1);
-    center.normalize();
-    var unit = new THREE.Quaternion();
-    unit.setFromUnitVectors(center, center);
-    var centerRot = new THREE.Quaternion();
-    centerRot.setFromUnitVectors(this.targetHeading, center);
-    unit.slerp(centerRot, 0.025);
-    this.targetHeading.applyQuaternion(unit);
-
-    this.displayVelocity();
-    this.displayTarget();
   }
 
   flap() {
