@@ -1,0 +1,14 @@
+{
+  "name": "thoughts",
+  "version": "1.0.0",
+  "dependencies": {
+    "rollup": "^0.41.4",
+    "rollup-watch": "^3.2.2",
+    "three": "~0.84.0",
+    "three-obj-loader": "~1.0.2"
+  },
+  "devDependencies": {
+    "rollup-plugin-commonjs": "^7.0.0",
+    "rollup-plugin-node-resolve": "^2.0.0"
+  }
+}
